@@ -412,6 +412,10 @@ void processTiles_weightStatinary(int numNeurons,
     #if FPGA == 1    
         clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&inputTileBuffer);
         //#TODO : set remaining kernel arguments
+        clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&inputTileBuffer);
+        clSetKernelArg(kernel, 2, sizeof(int), (void*)&inputTileSize);
+        clSetKernelArg(kernel, 3, sizeof(int), (void*)&outputNeuronsTileSize);
+        clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&outputBuffer);
     #endif
 
 
