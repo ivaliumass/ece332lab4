@@ -374,9 +374,10 @@ void processTiles_weightStatinary(int numNeurons,
 
     #if FPGA == 1
         weightsTileBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, currentTileSize * outputNeuronsTileSize * sizeof(float), NULL, &err);
-        
         //#TODO : create remaining required buffers
-
+        intputsTileBuffer = cdlCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
+        
+    
         if(err != CL_SUCCESS){
         }else{
             printf("done creating buffer\n");
