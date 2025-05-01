@@ -374,21 +374,36 @@ void processTiles_weightStatinary(int numNeurons,
 
     #if FPGA == 1
         weightsTileBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY, currentTileSize * outputNeuronsTileSize * sizeof(float), NULL, &err);
+        if(err != CL_SUCCESS){
+            printf("error creating the weights buffer: %d\n", err);
+            return;
+        }
         //#TODO : create remaining required buffers
         intputsTileBuffer = cdlCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
-        
-    
         if(err != CL_SUCCESS){
-        }else{
-            printf("done creating buffer\n");
+            printf("error creating the inputs buffer: %d\n", err);
+            return;
         }
+        outputBuffer =  clCreateBuffer(context, CL_MEM_READ_ONLY, numNeurons * sizeof(float), NULL, &err);
+        if (err != CL_SUCCESS) {
+            printf("Error creating output buffer: %d\n", err);
+            return;
+        }
+    
+        //if(err != CL_SUCCESS){
+       // }else{
+       //     printf("done creating buffer\n");
+    
 
 
         float pattern = 0.0f; // The pattern to fill, here it's 1.0 for float
         size_t pattern_size = sizeof(float); // Size of the pattern, here it's the size of a float
         size_t offset = 0; // Start offset within the buffer
         size_t size = numNeurons * sizeof(float); // Size of the buffer to fill
-
+        int numTiles = inputSize / inputTileSize; // getting the number of tiles
+        int totalWeights = inputSize * numNeurons;
+        int weightsPerTile = numNeurons*inputTileSize; // assuming theres an even distribution of neurons per tile
+        printf("s1 \n");
         //set output buffer to zeros, use this buffer to accumulate results for dot product
         err = clEnqueueFillBuffer(queue, outputBuffer, &pattern, pattern_size, offset, size, 0, NULL, NULL);
     #else
