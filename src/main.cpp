@@ -409,6 +409,10 @@ void processTiles_weightStatinary(int numNeurons,
     // clFinish(queue);    
 
 //--------------------------------------------------------//
+
+    
+    size_t inputTileSizeBytes = inputTileSize * sizeof(float);
+    size_t weightsTileSizeBytes = currentTileSize * outputNeuronsTileSize * sizeof(float);
     
     size_t global_work_size[] = {static_cast<size_t>(10)};
     size_t local_work_size[] = {static_cast<size_t>(1)};
