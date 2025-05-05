@@ -348,7 +348,7 @@ void processTiles_weightStatinary(int numNeurons,
             printf("error creating the weights buffer: %d\n", err);
             return;
         }
-        //#TODO : create remaining required buffers
+        //#TODO : create remaining required buffers: DONE
         intputsTileBuffer = cdlCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
         if(err != CL_SUCCESS){
             printf("error creating the inputs buffer: %d\n", err);
@@ -381,7 +381,7 @@ void processTiles_weightStatinary(int numNeurons,
 
     #if FPGA == 1    
         clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&inputTileBuffer);
-        //#TODO : set remaining kernel arguments
+        //#TODO : set remaining kernel arguments: DONE
         clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&inputTileBuffer);
         clSetKernelArg(kernel, 2, sizeof(int), (void*)&inputTileSize);
         clSetKernelArg(kernel, 3, sizeof(int), (void*)&outputNeuronsTileSize);
@@ -453,7 +453,7 @@ void processTiles_weightStatinary(int numNeurons,
 //--------------------------------------------------------//
     
     #if FPGA == 1
-        //#TODO: release remaining memory buffers
+        //#TODO: release remaining memory buffers: DONE
         clReleaseMemObject(inputTileBuffer);
         clReleaseMemObject(weightsTileBuffer);
         clReleaseMemObject(outputBuffer); 
