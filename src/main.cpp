@@ -482,6 +482,35 @@ void run() {
 
     printf("started running on fpga\n");
 
+        // --- Layer 1 (fc1) via FPGA ---
+    hidden_layer1_out.assign(numNeurons, 0.0f);
+    processTiles_weightStatinary(
+        numNeurons,
+        inputSize,
+        inputTileSize,
+        hidden_layer1_weights,
+        hidden_layer1_biases,
+        image_data,
+        hidden_layer1_out
+    );
+    relu(hidden_layer1_out);
+
+    // --- Layer 2 (fc2) via FPGA ---
+    output_layer_out.assign(numNeurons, 0.0f);
+    processTiles_weightStatinary(
+        numNeurons,
+        numNeurons,          // now inputSize == numNeurons
+        numNeurons,          // tile size == number of neurons
+        output_layer_weights,
+        output_layer_biases,
+        hidden_layer1_out,
+        output_layer_out
+    );
+    log_softmax(output_layer_out);
+
+    // Print result
+    printf("Predicted label: %d\n", getMaxIn(output_layer_out));
+
     //#TODO: similar to connecting computing each layer and connecting them in CPU code, implement same logic here but calling the FPGA functions
 }
 #endif
