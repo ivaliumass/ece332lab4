@@ -481,7 +481,8 @@ void run() {
 
 
     printf("started running on fpga\n");
-
+    //#TODO: similar to connecting computing each layer and connecting them in CPU code, implement same logic here but calling the FPGA functions
+    
         // --- Layer 1 (fc1) via FPGA ---
     hidden_layer1_out.assign(numNeurons, 0.0f);
     processTiles_weightStatinary(
@@ -494,6 +495,22 @@ void run() {
         hidden_layer1_out
     );
     relu(hidden_layer1_out);
+
+    printf("Completed Layer 1 computation on FPGA.\n");
+
+    // For debugging: Print output before activation
+    std::cout << "Output of fc1 (before ReLU): ";
+    for(int i=0; i<numNeurons; i++){ 
+        std::cout << hidden_layer1_out[i] << " ";
+    }
+    std::cout << std::endl;
+    relu(hidden_layer1_out);
+
+    std::cout << "Output of fc1 (after ReLU): ";
+    for(int i=0; i<numNeurons; i++){
+        std::cout << hidden_layer1_out[i] << " ";
+    }
+    std::cout << std::endl;
 
     // --- Layer 2 (fc2) via FPGA ---
     output_layer_out.assign(numNeurons, 0.0f);
@@ -508,10 +525,23 @@ void run() {
     );
     log_softmax(output_layer_out);
 
+    printf("Completed Layer 2 computation on FPGA.\n");
+
+    //for debugging: print output before final activation
+    std::cout << "Output of fc2 (before LogSoftmax): ";
+    for(int i=0; i<numNeurons; i++){ // Only print the 10 actual outputs
+        std::cout << output_layer_out[i] << " ";
+    }
+    std::cout << std::endl;
+    log_softmax(output_layer_out);
+    std::cout << "Output of fc2 (after LogSoftmax): ";
+    for(int i=0; i<numNeurons; i++){
+        std::cout << output_layer_out[i] << " ";
+    }
+    std::cout << std::endl;
+
     // Print result
     printf("Predicted label: %d\n", getMaxIn(output_layer_out));
-
-    //#TODO: similar to connecting computing each layer and connecting them in CPU code, implement same logic here but calling the FPGA functions
 }
 #endif
 
