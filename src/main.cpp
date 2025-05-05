@@ -349,7 +349,7 @@ void processTiles_weightStatinary(int numNeurons,
             return;
         }
         //#TODO : create remaining required buffers: DONE
-        intputsTileBuffer = cdlCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
+        inputsTileBuffer = cdlCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
         if(err != CL_SUCCESS){
             printf("error creating the inputs buffer: %d\n", err);
             return;
