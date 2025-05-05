@@ -21,8 +21,6 @@
 #define FPGA 1
 
 
-
-
 #if FPGA == 1// If FPGA == 1, OpenCL related code will execute
 
     cl_platform_id platform;
@@ -42,10 +40,6 @@
 
 
 #endif
-
-
-
-
 
 
 // Image size in 1D array = 28 x 28
@@ -175,8 +169,6 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-
-
 void setupDataAndModels(){
     const char* filename = "first_image_mnist.bmp";
     int width = 0;
@@ -188,7 +180,6 @@ void setupDataAndModels(){
     normalizeImage(pre_image_data, width*height, image_data);
     
     printf("done loading image:%d\n",width*height);
-
 
     if (!loadModelParameters(layer1_weightsPath,layer1_biasesPath,hidden_layer1_weights,hidden_layer1_biases)) {
 
@@ -208,9 +199,6 @@ void setupDataAndModels(){
     }
 
     printf("loaded model parameters\n");
-
-
-
 }
 
 
@@ -230,11 +218,7 @@ void log_softmax(std::vector<float>& v) {
     for(size_t i = 0; i < v.size(); ++i) {
         v[i] = std::log(exp_values[i] / sum);
     }
-
-
-
 }
-
 
 void normalizeImage(unsigned char* imageData, size_t imageSize, std::vector<float>& normalizedImage) {
     normalizedImage.resize(imageSize);
@@ -246,25 +230,19 @@ void normalizeImage(unsigned char* imageData, size_t imageSize, std::vector<floa
     }
 }
 
-
 std::vector<float> loadFloatsFromFile(const std::string& filename) {
     // Open the file in binary mode
     std::ifstream file(filename.c_str(), std::ios::binary | std::ios::ate);
-    
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << filename << std::endl;
         return {}; // Return an empty vector in case of failure
     }
-
     // Determine the file size
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
-
     // Calculate the number of float elements
     std::streamsize numElements = size / sizeof(float);
-
     std::vector<float> buffer(numElements);
-
     // Read the file content into the buffer
     if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
         std::cerr << "Failed to read floats from file: " << filename << std::endl;
@@ -276,19 +254,11 @@ std::vector<float> loadFloatsFromFile(const std::string& filename) {
 }
 
 
-
-
-
 bool loadModelParameters(const std::string& weightsPath, const std::string& biasesPath, 
                          std::vector<float>& weightsBuffer, std::vector<float>& biases) {
-
-
+    
     weightsBuffer = loadFloatsFromFile(weightsPath);
-
-
     biases = loadFloatsFromFile(biasesPath);
-
-
     return true; // Successfully loaded and transferred weights and biases
 }
 
@@ -437,11 +407,56 @@ void processTiles_weightStatinary(int numNeurons,
 
     // OpenCL kernels running on FPGA are not synchornous. You will synchronize your computations by waiting till the queue is finished by the following code    
     // clFinish(queue);    
-    
 
+//--------------------------------------------------------//
+    
+    size_t global_work_size[] = {static_cast<size_t>(10)};
+    size_t local_work_size[] = {static_cast<size_t>(1)};
+    
+    for (int tileIndex = 0; tileIndex < numTiles; ++tileIndex) {
+        int weightsStartIndex = tileIndex * inputTileSize;
+        int inputStartIndex = tileIndex * inputTileSize;
+
+        std::vector<float> temp_wts_tile;
+        temp_wts_tile.resize(outputNeuronsTileSize * inputTileSize);
+        
+        loadWeights(weightsStartIndex, outputNeuronsTileSize, inputTileSize, inputSize, weights, temp_wts_tile);
+
+        err = clEnqueueWriteBuffer(queue, inputTileBuffer, CL_TRUE, 0, inputTileSizeBytes, 
+                                   &inputs[inputStartIndex], 0, NULL, NULL);
+                                  
+        checkError(err, "Failed to write to input tile buffer");
+
+        err = clEnqueueWriteBuffer(queue, weightsTileBuffer, CL_TRUE, 0, weightsTileSizeBytes,
+                                   temp_wts_tile.data(), 0, NULL, NULL);
+        checkError(err, "Failed to write to weights tile buffer");
+
+        err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, global_work_size,
+                                    local_work_size, 0, NULL, NULL);
+        checkError(err, "Failed to enqueue kernel");
+
+        err = clFinish(queue);
+        checkError(err, "Failed to finish queue");
+
+        printf("Processed tile %d/%d\n", tileIndex + 1, numTiles);
+    }
+
+    err = clEnqueueReadBuffer(queue, outputBuffer, CL_TRUE, 0, numNeurons * sizeof(float), 
+                                outputs.data(), 0, NULL, NULL);
+    checkError(err, "Failed to read output buffer");
+
+    for(int i = 0; i < numNeurons; i++) {
+        outputs[i] += biases[i];
+    }
+
+    
+//--------------------------------------------------------//
+    
     #if FPGA == 1
-        clReleaseMemObject(inputTileBuffer);
         //#TODO: release remaining memory buffers
+        clReleaseMemObject(inputTileBuffer);
+        clReleaseMemObject(weightsTileBuffer);
+        clReleaseMemObject(outputBuffer); 
     #endif
 }
 #endif
