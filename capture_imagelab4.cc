@@ -13,7 +13,7 @@
 #define VIDEO_BASE 0x0000
 
 
-#define IMAGE_WIDTH 240
+#define IMAGE_WIDTH 320
 #define IMAGE_HEIGHT 240
 
 #define FPGA_ONCHIP_BASE     (0xC8000000)
@@ -85,9 +85,9 @@ int main(void){
             break; // interrupt from hardware
         }
         else if(!(press & 0x2)){ // take images and break from control
-	    scaleImagePreservingAspectRatio(&pixels_bw[0][0], &pixels_scaled[0][0],240, 240, 28, 28);
+	    updated_scaleImagePreservingAspectRatio(&pixels_bw[0][0], &pixels_scaled[0][0], IMAGE_WIDTH, IMAGE_HEIGHT, 28, 28);
             saveImageShort(filename, pixels, IMAGE_WIDTH, IMAGE_HEIGHT);
-            saveImageGrayscale(filename1, pixels_bw, IMAGE_WIDTH, IMAGE_HEIGHT);
+            saveImage8Bit(filename1, pixels_bw, IMAGE_WIDTH, IMAGE_HEIGHT);
             printf("images captured: breaking from control \n");
             break;
         }
