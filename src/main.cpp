@@ -349,7 +349,7 @@ void processTiles_weightStatinary(int numNeurons,
             return;
         }
         //#TODO : create remaining required buffers: DONE
-        inputsTileBuffer = clCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
+        inputTileBuffer = clCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
         if(err != CL_SUCCESS){
             printf("error creating the inputs buffer: %d\n", err);
             return;
@@ -416,15 +416,17 @@ void processTiles_weightStatinary(int numNeurons,
     
     size_t global_work_size[] = {static_cast<size_t>(10)};
     size_t local_work_size[] = {static_cast<size_t>(1)};
+
+    std::vector<float> temp_wts_tile;
+    temp_wts_tile.resize(outputNeuronsTileSize * inputTileSize);
     loadWeights(weightsStartIndex, outputNeuronsTileSize, inputTileSize, inputSize, weights, temp_wts_tile);
 
     for (int tileIndex = 0; tileIndex < numTiles; ++tileIndex) {
         int weightsStartIndex = tileIndex * inputTileSize;
         int inputStartIndex = tileIndex * inputTileSize;
 
-        std::vector<float> temp_wts_tile;
-        temp_wts_tile.resize(outputNeuronsTileSize * inputTileSize);
-
+        //std, temp_wtstile and loadweights was here before
+        
         err = clEnqueueWriteBuffer(queue, inputTileBuffer, CL_TRUE, 0, inputTileSizeBytes, 
                                    &inputs[inputStartIndex], 0, NULL, NULL);
                                   
