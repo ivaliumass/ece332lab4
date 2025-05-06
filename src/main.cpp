@@ -409,7 +409,19 @@ void processTiles_weightStatinary(int numNeurons,
     // clFinish(queue);    
 
 //--------------------------------------------------------//
-
+    std::vector<float> loadWeights(int weightsStartIndex,int numNeurons,int inputTileSize,int inputSize,
+    std::vector<float>& weights,std::vector<float>& temp_wts){
+    
+        int index = 0;
+        for(int i=0;i<numNeurons;i++){
+            for(int j=0;j<inputTileSize;j++){
+                temp_wts[index] = weights[(i)*inputSize + j+weightsStartIndex];
+                //printf("index:%d\n",index);
+                index++;
+            }
+        }
+        return temp_wts;    
+    }
     
     size_t inputTileSizeBytes = inputTileSize * sizeof(float);
     size_t weightsTileSizeBytes = currentTileSize * outputNeuronsTileSize * sizeof(float);
@@ -417,15 +429,14 @@ void processTiles_weightStatinary(int numNeurons,
     size_t global_work_size[] = {static_cast<size_t>(10)};
     size_t local_work_size[] = {static_cast<size_t>(1)};
 
-    std::vector<float> temp_wts_tile;
-    temp_wts_tile.resize(outputNeuronsTileSize * inputTileSize);
-    loadWeights(weightsStartIndex, outputNeuronsTileSize, inputTileSize, inputSize, weights, temp_wts_tile);
-
     for (int tileIndex = 0; tileIndex < numTiles; ++tileIndex) {
         int weightsStartIndex = tileIndex * inputTileSize;
         int inputStartIndex = tileIndex * inputTileSize;
 
         //std, temp_wtstile and loadweights was here before
+        std::vector<float> temp_wts_tile;
+        temp_wts_tile.resize(outputNeuronsTileSize * inputTileSize);
+        loadWeights(weightsStartIndex, outputNeuronsTileSize, inputTileSize, inputSize, weights, temp_wts_tile);
         
         err = clEnqueueWriteBuffer(queue, inputTileBuffer, CL_TRUE, 0, inputTileSizeBytes, 
                                    &inputs[inputStartIndex], 0, NULL, NULL);
