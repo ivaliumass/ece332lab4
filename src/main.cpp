@@ -410,18 +410,7 @@ void processTiles_weightStatinary(int numNeurons,
 
 //--------------------------------------------------------//
     std::vector<float> loadWeights(int weightsStartIndex,int numNeurons,int inputTileSize,int inputSize,
-    std::vector<float>& weights,std::vector<float>& temp_wts){
-    
-        int index = 0;
-        for(int i=0;i<numNeurons;i++){
-            for(int j=0;j<inputTileSize;j++){
-                temp_wts[index] = weights[(i)*inputSize + j+weightsStartIndex];
-                //printf("index:%d\n",index);
-                index++;
-            }
-        }
-        return temp_wts;    
-    }
+    std::vector<float>& weights,std::vector<float>& temp_wts); //proplerly declare the loadweights function
     
     size_t inputTileSizeBytes = inputTileSize * sizeof(float);
     size_t weightsTileSizeBytes = currentTileSize * outputNeuronsTileSize * sizeof(float);
