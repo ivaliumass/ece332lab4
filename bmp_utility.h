@@ -40,7 +40,7 @@ struct BMPInfoHeader {
           width(0),
           height(0),
           planes(1),
-          bit_count(24),
+          bit_count(8), // changed 24 to 8
           compression(0),
           size_image(0),
           x_pixels_per_meter(0),
