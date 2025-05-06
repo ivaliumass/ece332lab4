@@ -15,6 +15,8 @@
 
 #define IMAGE_WIDTH 320
 #define IMAGE_HEIGHT 240
+#define COMPRESS_WIDTH 28
+#define COMPRESS_HEIGHT 28
 
 #define FPGA_ONCHIP_BASE     (0xC8000000)
 #define IMAGE_SPAN (IMAGE_WIDTH * IMAGE_HEIGHT * 4)
@@ -30,6 +32,7 @@ int main(void){
     int fd;
     unsigned short pixels[IMAGE_WIDTH * IMAGE_HEIGHT];
     unsigned char pixels_bw[IMAGE_WIDTH * IMAGE_HEIGHT];
+    unsigned char pixels_scaled[COMPRESS_WIDTH * COMPRESS_HEIGHT];
     const char* filename = "final_image_color.bmp";
     const char* filename1 = "final_image_bw.bmp";
     // Open /dev/mem
@@ -85,9 +88,9 @@ int main(void){
             break; // interrupt from hardware
         }
         else if(!(press & 0x2)){ // take images and break from control
-	    updated_scaleImagePreservingAspectRatio(&pixels_bw[0][0], &pixels_scaled[0][0], IMAGE_WIDTH, IMAGE_HEIGHT, 28, 28);
+	    updated_scaleImagePreservingAspectRatio(pixels_bw, pixels_scaled, IMAGE_WIDTH, IMAGE_HEIGHT, COMPRESS_WIDTH, COMPRESS_HEIGHT);
             saveImageShort(filename, pixels, IMAGE_WIDTH, IMAGE_HEIGHT);
-            saveImage8Bit(filename1, pixels_bw, IMAGE_WIDTH, IMAGE_HEIGHT);
+            saveImage8Bit(filename1, pixels_scaled, COMPRESS_WIDTH, COMPRESS_HEIGHT);
             printf("images captured: breaking from control \n");
             break;
         }
