@@ -137,9 +137,9 @@ void updated_scaleImagePreservingAspectRatio(
                         dx * dy * c11;
 
             // don't invert if the test image is white digit on black background
-            output[y * targetWidth + x] = (unsigned char)(val);
+            //output[y * targetWidth + x] = (unsigned char)(val);
             // Invert for MNIST-style: white digit on black background
-            //output[y * targetWidth + x] = 255 - (unsigned char)(val);
+            output[y * targetWidth + x] = 255 - (unsigned char)(val);
         }
     }
 }
