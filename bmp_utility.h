@@ -323,7 +323,7 @@ unsigned char* loadBMPGrayscale(const char* filename, int* width, int* height) {
     return data;
 }
 
-
+/*
 unsigned char* loadBMPGrayscale24bit(const char* filename, int* width, int* height) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {
@@ -376,7 +376,7 @@ unsigned char* loadBMPGrayscale24bit(const char* filename, int* width, int* heig
     return grayscaleData;
 }
 
-
+*/
 void saveImage8Bit(const char* filename, const unsigned char* temp, int width, int height) {
     BMPFileHeader file_header;
     BMPInfoHeader info_header;
