@@ -323,12 +323,12 @@ unsigned char* loadBMPGrayscale(const char* filename, int* width, int* height) {
     return data;
 }
 
-/*
+
 unsigned char* loadBMPGrayscale24bit(const char* filename, int* width, int* height) {
     std::ifstream file(filename, std::ios::binary);
     if (!file.is_open()) {
         std::cerr << "Unable to open file " << filename << std::endl;
-        return nullptr;
+        return NULL;
     }
 
     BMPFileHeader fileHeader;
@@ -339,7 +339,7 @@ unsigned char* loadBMPGrayscale24bit(const char* filename, int* width, int* heig
 
     if (bmpInfoHeader.bit_count != 24) {
         std::cerr << "Unsupported bit depth (expected 24-bit for conversion to grayscale)." << std::endl;
-        return nullptr;
+        return NULL;
     }
 
     *width = bmpInfoHeader.width;
@@ -376,7 +376,6 @@ unsigned char* loadBMPGrayscale24bit(const char* filename, int* width, int* heig
     return grayscaleData;
 }
 
-*/
 void saveImage8Bit(const char* filename, const unsigned char* temp, int width, int height) {
     BMPFileHeader file_header;
     BMPInfoHeader info_header;
