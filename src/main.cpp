@@ -122,8 +122,25 @@ bool loadModelParameters(const std::string& weightsPath, const std::string& bias
                          std::vector<float>& weightsBuffer, std::vector<float>& biases);
 
 
+
+
 std::vector<float> loadFloatsFromFile(const std::string& filename);
 void log_softmax(std::vector<float>& v);
+
+
+std::vector<float> loadWeights(int weightsStartIndex,int numNeurons,int inputTileSize,int inputSize,
+    std::vector<float>& weights,std::vector<float>& temp_wts){
+    
+    int index = 0;
+    for(int i=0;i<numNeurons;i++){
+        for(int j=0;j<inputTileSize;j++){
+            temp_wts[index] = weights[(i)*inputSize + j+weightsStartIndex];
+            //printf("index:%d\n",index);
+            index++;
+        }
+    }
+    return temp_wts;    
+}
 
 
 // Code execution starts here
@@ -174,7 +191,7 @@ void setupDataAndModels(){
     int width = 0;
     int height = 0;
 
-    unsigned char* pre_image_data = loadBMPGrayscale(filename, &width, &height);
+    unsigned char* pre_image_data = loadBMPGrayscale24bit(filename, &width, &height);
     flipImageVertically(pre_image_data, width, height);
 
     normalizeImage(pre_image_data, width*height, image_data);
@@ -349,12 +366,12 @@ void processTiles_weightStatinary(int numNeurons,
             return;
         }
         //#TODO : create remaining required buffers: DONE
-        inputTileBuffer = clCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize * inputTileSize * sizeof(float), NULL, &err);
+        inputTileBuffer = clCreateBuffer(context,  CL_MEM_READ_ONLY, currentTileSize  * sizeof(float), NULL, &err);
         if(err != CL_SUCCESS){
             printf("error creating the inputs buffer: %d\n", err);
             return;
         }
-        outputBuffer =  clCreateBuffer(context, CL_MEM_READ_ONLY, numNeurons * sizeof(float), NULL, &err);
+        outputBuffer =  clCreateBuffer(context, CL_MEM_READ_WRITE, outputNeuronsTileSize * sizeof(float), NULL, &err);
         if (err != CL_SUCCESS) {
             printf("Error creating output buffer: %d\n", err);
             return;
@@ -382,7 +399,7 @@ void processTiles_weightStatinary(int numNeurons,
     #if FPGA == 1    
         clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&inputTileBuffer);
         //#TODO : set remaining kernel arguments: DONE
-        clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&inputTileBuffer);
+        clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&weightsTileBuffer);
         clSetKernelArg(kernel, 2, sizeof(int), (void*)&inputTileSize);
         clSetKernelArg(kernel, 3, sizeof(int), (void*)&outputNeuronsTileSize);
         clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&outputBuffer);
@@ -409,8 +426,7 @@ void processTiles_weightStatinary(int numNeurons,
     // clFinish(queue);    
 
 //--------------------------------------------------------//
-    std::vector<float> loadWeights(int weightsStartIndex,int numNeurons,int inputTileSize,int inputSize,
-    std::vector<float>& weights,std::vector<float>& temp_wts); //proplerly declare the loadweights function
+    
     
     size_t inputTileSizeBytes = inputTileSize * sizeof(float);
     size_t weightsTileSizeBytes = currentTileSize * outputNeuronsTileSize * sizeof(float);
@@ -489,7 +505,7 @@ void run() {
     //#TODO: similar to connecting computing each layer and connecting them in CPU code, implement same logic here but calling the FPGA functions
     
         // --- Layer 1 (fc1) via FPGA ---
-    hidden_layer1_out.assign(numNeurons, 0.0f);
+    hidden_layer1_out.assign(numNeurons * inputTileSize, 0.0f);
     processTiles_weightStatinary(
         numNeurons,
         inputSize,
@@ -580,19 +596,7 @@ void matrixMulCPU(
 }
 
 
-std::vector<float> loadWeights(int weightsStartIndex,int numNeurons,int inputTileSize,int inputSize,
-    std::vector<float>& weights,std::vector<float>& temp_wts){
-    
-    int index = 0;
-    for(int i=0;i<numNeurons;i++){
-        for(int j=0;j<inputTileSize;j++){
-            temp_wts[index] = weights[(i)*inputSize + j+weightsStartIndex];
-            //printf("index:%d\n",index);
-            index++;
-        }
-    }
-    return temp_wts;    
-}
+
 
 #if FPGA == 0
 void processTiles_weightStatinary_CPU(
@@ -759,7 +763,3 @@ void cleanup() {
 
     // If you have other resources allocated, make sure to release them properly
 }
-
-
-
-
